@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      // document.cookie = "usr=aaa";
+      // document.cookie = "token=true";
+      // console.log(document.cookie)
+      // if(window.localStorage) {
+      //     localStorage.setItem("name", "aaa");
+      //     localStorage.setItem("gender", "famale");
+      // }
+      // const name = localStorage.getItem("name");
+      // console.log(name);
+      const myDB = {
+        name: "testDB",
+        version: "1",
+        db: null
+      };
+      function openDB(name, callback) {
+        const request = window.indexedDB.open(name);
+        request.onerror = function(e) {
+          console.log("open indexedDB error");
+        };
+        request.onsuccess = function(e) {
+          console.log("onsuccess");
+          myDB.db = e.target.result;
+          callback && callback();
+        };
+
+        // from no database to first version, first version to second version ...
+        request.onupgradeneeded = function() {
+          console.log("onupgradeneeded");
+
+          const store = request.result.createObjectStore("books", {
+            keyPath: "isbn"
+          });
+          const titleIndex = store.createIndex("by_title", "title", {
+            unique: true
+          });
+
+          const authorIndex = store.createIndex("by_author", "author");
+
+          store.put({
+            title: "Quarry Memories",
+            author: "Fred",
+            isbn: 123456
+          });
+
+          store.put({
+            title: "Water Buffaloes",
+            author: "Fred",
+            isbn: 234567
+          });
+
+          store.put({
+            title: "Bedrock Nights",
+            author: "Barney",
+            isbn: 345678
+          });
+        };
+      }
+      function addData(db) {
+        // object store
+        const transaction = db.transaction("books", "readwrite");
+        const store = transaction.objectStore("books");
+        // 获取当前indexdb中的数据
+        // const request = store.get(234567)
+        // request.onsuccess = function (e) {
+        //   console.log(e.target.result);
+        // }
+        
+        // 添加信息到indexdb
+        // store.add({
+        //   title: "Flowers",
+        //   author: "Quan",
+        //   isbn: 222
+        // })
+
+        // 删除
+        // store.delete(222)
+        
+        // store.get(222).onsuccess = function (e) {
+        //   books = e.target.result;
+        //   console.log(books);
+        //   books.author = "James";
+        //   const request = store.put(books);
+        //   request.onsuccess = function (e) {
+        //     console.log("update success");
+        //   }
+        // }
+      
+      }
+      openDB("testDB", function() {
+        // myDB.db.close();
+        // window.indexedDB.deleteDatabase(myDB.db);
+        addData(myDB.db);
+      });
+  
+    </script>
+  </body>
+</html>
